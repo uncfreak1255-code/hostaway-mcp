@@ -1,0 +1,3 @@
+#!/bin/sh
+set -eu
+node "/Users/sawbeck/.codex/guardrail-kit/bin/guardrail-pre-push.js" "$@"

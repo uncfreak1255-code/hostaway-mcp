@@ -1,0 +1,39 @@
+{
+  "name": "hostaway-mcp",
+  "version": "0.1.0",
+  "description": "Read-only, hospitality-shaped MCP server for Hostaway",
+  "type": "module",
+  "bin": {
+    "hostaway-mcp": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "mcp",
+    "hostaway",
+    "claude",
+    "codex",
+    "vacation-rental",
+    "hospitality"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}

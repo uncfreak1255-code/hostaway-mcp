@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "isIncoming": 1,
+    "text": "Can we check in early?",
+    "date": "2026-07-01T12:15:00Z"
+  },
+  {
+    "id": 2,
+    "isIncoming": 0,
+    "body": "Yes, 3pm works if cleaning is done.",
+    "createdOn": "2026-07-01T12:20:00Z"
+  }
+]

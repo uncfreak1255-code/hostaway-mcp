@@ -1,0 +1,13 @@
+{
+  "id": 135880,
+  "name": "River House",
+  "airbnbName": "River House on the Water",
+  "city": "Anna Maria",
+  "country": "US",
+  "personCapacity": 6,
+  "bedroomsNumber": 3,
+  "guestBathroomsNumber": 2,
+  "bookingEngineUrls": [
+    "https://booking.example/river-house"
+  ]
+}

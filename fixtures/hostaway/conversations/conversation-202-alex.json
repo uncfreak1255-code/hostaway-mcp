@@ -1,0 +1,32 @@
+{
+  "id": 202,
+  "listingMapId": 206016,
+  "reservationId": 502,
+  "guestName": "Alex Rivera",
+  "guestEmail": "alex@example.com",
+  "channelId": 2016,
+  "channelName": "VRBO",
+  "arrivalDate": "2026-08-10",
+  "departureDate": "2026-08-14",
+  "hasUnreadMessages": 1,
+  "messageSentOn": "2026-08-09T14:00:00Z",
+  "messageReceivedOn": "2026-08-09T13:40:00Z",
+  "isArchived": false,
+  "Reservation": {
+    "id": 502,
+    "listingMapId": 206016,
+    "listingName": "Dockside Dreams",
+    "channelId": 2016,
+    "channelName": "VRBO",
+    "guestName": "Alex Rivera",
+    "guestEmail": "alex@example.com",
+    "arrivalDate": "2026-08-10",
+    "departureDate": "2026-08-14",
+    "status": "new",
+    "numberOfGuests": 2,
+    "adults": 2,
+    "children": 0,
+    "infants": 0,
+    "pets": 0
+  }
+}

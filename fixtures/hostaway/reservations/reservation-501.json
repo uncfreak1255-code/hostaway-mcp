@@ -1,0 +1,21 @@
+{
+  "id": 501,
+  "listingMapId": 135880,
+  "listingName": "River House",
+  "channelId": 2000,
+  "channelName": "Airbnb",
+  "guestName": "Jane Smith",
+  "guestFirstName": "Jane",
+  "guestLastName": "Smith",
+  "guestEmail": "jane@example.com",
+  "arrivalDate": "2026-07-01",
+  "departureDate": "2026-07-05",
+  "status": "confirmed",
+  "numberOfGuests": 4,
+  "adults": 2,
+  "children": 2,
+  "infants": 0,
+  "pets": 0,
+  "totalPrice": 1450.5,
+  "currency": "USD"
+}

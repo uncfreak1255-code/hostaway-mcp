@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "isIncoming": 0,
+    "body": "Welcome in.",
+    "createdOn": "2026-07-01T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "isIncoming": 1,
+    "message": "Can we check in early?",
+    "insertedOn": "2026-07-01T12:15:00Z",
+    "attachments": []
+  }
+]

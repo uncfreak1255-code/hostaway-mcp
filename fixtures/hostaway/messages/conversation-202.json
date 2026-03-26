@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "isIncoming": 1,
+    "text": "We will arrive around 4pm.",
+    "date": "2026-08-09T13:40:00Z"
+  },
+  {
+    "id": 2,
+    "isIncoming": 0,
+    "body": "Perfect. The house will be ready for you.",
+    "createdOn": "2026-08-09T14:00:00Z"
+  }
+]

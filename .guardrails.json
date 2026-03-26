@@ -1,0 +1,17 @@
+{
+  "workflow": "feature-branch",
+  "protectedBranches": [
+    "main",
+    "master"
+  ],
+  "generatedPaths": [
+    "_site/",
+    "_site_verify",
+    "tmp/",
+    "dist/",
+    "build/"
+  ],
+  "testCommand": "",
+  "buildCommand": "",
+  "mergeBase": "origin/main...HEAD"
+}

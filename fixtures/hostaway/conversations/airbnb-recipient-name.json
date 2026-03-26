@@ -1,0 +1,13 @@
+{
+  "id": 101,
+  "channelId": 2000,
+  "channelName": "Airbnb",
+  "listingMapId": 135880,
+  "recipientName": "Jane Smith",
+  "guestFirstName": "Ignored",
+  "guestLastName": "Ignored",
+  "guestName": "Ignored Guest",
+  "arrivalDate": "2026-07-01",
+  "departureDate": "2026-07-05",
+  "isArchived": false
+}
