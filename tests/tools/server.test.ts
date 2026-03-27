@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
@@ -17,6 +18,9 @@ import listing206016 from "../../fixtures/hostaway/listings/listing-206016.json"
 import listing487798 from "../../fixtures/hostaway/listings/listing-487798-missing-fields.json" with { type: "json" };
 
 import { createHostawayClientFromEnv, createHostawayMcpServer } from "../../src/server.js";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../../package.json") as { version: string };
 
 class FakeHostawayClient {
   private readonly conversations: RawHostawayConversation[] = [
@@ -173,6 +177,30 @@ describe("Hostaway MCP server", () => {
 
     if (previous) {
       process.env.HOSTAWAY_API_TOKEN = previous;
+    }
+  });
+
+  test("advertises the package version by default", async () => {
+    const server = createHostawayMcpServer({
+      client: new FakeHostawayClient()
+    });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const versionClient = new Client({
+      name: "hostaway-mcp-version-client",
+      version: "1.0.0"
+    });
+
+    await Promise.all([server.connect(serverTransport), versionClient.connect(clientTransport)]);
+
+    try {
+      const result = await versionClient.getServerVersion();
+      expect(result).toBeDefined();
+      if (!result) {
+        throw new Error("Expected server version response");
+      }
+      expect(result.version).toBe(pkg.version);
+    } finally {
+      await clientTransport.close();
     }
   });
 
