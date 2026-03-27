@@ -50,25 +50,68 @@ npx hostaway-mcp
 
 ## MCP Client Wiring
 
-For local MCP clients, point the server command at the built CLI and provide the token
-through the environment:
+For local MCP clients, provide `HOSTAWAY_API_TOKEN` through the environment and
+spawn the published npm package over stdio.
+
+The snippets below are pinned to the current published version:
+
+```text
+hostaway-mcp@0.1.1
+```
+
+Update that version intentionally when you upgrade.
+
+### Claude Desktop (macOS)
+
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json`.
+
+If you already have top-level keys like `preferences`, keep them and add
+`mcpServers` alongside them:
+
+```json
+{
+  "mcpServers": {
+    "hostaway": {
+      "command": "npx",
+      "args": ["-y", "hostaway-mcp@0.1.1"],
+      "env": {
+        "HOSTAWAY_API_TOKEN": "your-token-here"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving the file.
+
+### Codex
+
+Edit `~/.codex/config.toml` and add:
+
+```toml
+[mcp_servers.hostaway]
+command = "npx"
+args = ["-y", "hostaway-mcp@0.1.1"]
+
+[mcp_servers.hostaway.env]
+HOSTAWAY_API_TOKEN = "your-token-here"
+```
+
+Verify the server is registered:
+
+```bash
+codex mcp list
+```
+
+### Local Built CLI
+
+If you want to run the repo checkout instead of npm, point the client at the built
+CLI directly:
 
 ```json
 {
   "command": "node",
   "args": ["/absolute/path/to/hostaway-mcp/dist/cli.js"],
-  "env": {
-    "HOSTAWAY_API_TOKEN": "your-token-here"
-  }
-}
-```
-
-After npm publish, clients can also spawn it with `npx`:
-
-```json
-{
-  "command": "npx",
-  "args": ["-y", "hostaway-mcp"],
   "env": {
     "HOSTAWAY_API_TOKEN": "your-token-here"
   }
