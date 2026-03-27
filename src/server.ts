@@ -1,6 +1,6 @@
+import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import packageJson from "../package.json" with { type: "json" };
 import { HostawayClient } from "./hostaway/client.js";
 import type { HostawayDataClient, HostawayClientConfig } from "./hostaway/client.js";
 import { registerGetConversationContextTool } from "./tools/get-conversation-context.js";
@@ -9,6 +9,9 @@ import { registerGetReservationBriefTool } from "./tools/get-reservation-brief.j
 import { registerListUnreadGuestThreadsTool } from "./tools/list-unread-guest-threads.js";
 import { registerSearchConversationsTool } from "./tools/search-conversations.js";
 import { registerSearchReservationsTool } from "./tools/search-reservations.js";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json") as { version: string };
 
 export function createHostawayClientFromEnv() {
   const apiToken = process.env.HOSTAWAY_API_TOKEN;
@@ -31,7 +34,7 @@ export function createHostawayClientFromEnv() {
 export function createHostawayMcpServer({
   client,
   name = "hostaway-mcp",
-  version = packageJson.version
+  version = pkg.version
 }: {
   client: HostawayDataClient;
   name?: string;
