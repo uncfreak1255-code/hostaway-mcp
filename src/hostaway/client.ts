@@ -48,6 +48,11 @@ export interface ListListingsParams {
   includeResources?: number;
 }
 
+export interface HostawayWriteResult {
+  status: string;
+  result: unknown;
+}
+
 export interface HostawayDataClient {
   listConversations(params?: ListConversationsParams): Promise<RawHostawayConversation[]>;
   getConversation(conversationId: string | number, params?: { includeResources?: number }): Promise<RawHostawayConversation>;
@@ -58,7 +63,13 @@ export interface HostawayDataClient {
   getListing(listingId: string | number): Promise<RawHostawayListing>;
 }
 
-export class HostawayClient implements HostawayDataClient {
+export interface HostawayWriteClient extends HostawayDataClient {
+  updateConversation(conversationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult>;
+  updateReservation(reservationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult>;
+  sendMessage(conversationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult>;
+}
+
+export class HostawayClient implements HostawayWriteClient {
   private readonly apiToken: string;
   private readonly baseUrl: string;
 
@@ -93,6 +104,62 @@ export class HostawayClient implements HostawayDataClient {
 
   async getListing(listingId: string | number): Promise<RawHostawayListing> {
     return this.request(`/v1/listings/${listingId}`);
+  }
+
+  async updateConversation(conversationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult> {
+    return this.mutate("PUT", `/v1/conversations/${conversationId}`, body);
+  }
+
+  async updateReservation(reservationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult> {
+    return this.mutate("PUT", `/v1/reservations/${reservationId}`, body);
+  }
+
+  async sendMessage(conversationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult> {
+    return this.mutate("POST", `/v1/conversations/${conversationId}/messages`, body);
+  }
+
+  private async mutate<T>(method: "PUT" | "POST", path: string, body: Record<string, unknown>): Promise<T> {
+    const url = this.buildUrl(path, {});
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${this.apiToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("AUTH_EXPIRED");
+    }
+
+    if (response.status === 429) {
+      throw new Error("RATE_LIMITED");
+    }
+
+    const rawBody = await response.text();
+
+    let parsed: unknown;
+    try {
+      parsed = rawBody ? JSON.parse(rawBody) : null;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown parse error";
+      throw new Error(`JSON parse error: ${message}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(`Hostaway request failed (${response.status}): ${this.stringifyErrorBody(parsed)}`);
+    }
+
+    if (parsed && typeof parsed === "object" && "status" in parsed) {
+      const payload = parsed as { status?: string; result?: unknown; message?: string };
+
+      if (payload.status === "fail") {
+        throw new Error(`Hostaway API error: ${payload.message ?? this.stringifyErrorBody(payload.result)}`);
+      }
+    }
+
+    return parsed as T;
   }
 
   private async request<T>(path: string, params: object = {}): Promise<T> {
