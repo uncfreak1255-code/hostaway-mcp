@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
+import packageJson from "../package.json" with { type: "json" };
 import { HostawayClient } from "./hostaway/client.js";
 import type { HostawayDataClient, HostawayClientConfig } from "./hostaway/client.js";
 import { registerGetConversationContextTool } from "./tools/get-conversation-context.js";
@@ -30,7 +31,7 @@ export function createHostawayClientFromEnv() {
 export function createHostawayMcpServer({
   client,
   name = "hostaway-mcp",
-  version = "0.1.0"
+  version = packageJson.version
 }: {
   client: HostawayDataClient;
   name?: string;

@@ -15,6 +15,7 @@ import reservation503 from "../../fixtures/hostaway/reservations/reservation-503
 import listing135880 from "../../fixtures/hostaway/listings/listing-135880.json" with { type: "json" };
 import listing206016 from "../../fixtures/hostaway/listings/listing-206016.json" with { type: "json" };
 import listing487798 from "../../fixtures/hostaway/listings/listing-487798-missing-fields.json" with { type: "json" };
+import packageJson from "../../package.json" with { type: "json" };
 
 import { createHostawayClientFromEnv, createHostawayMcpServer } from "../../src/server.js";
 
@@ -187,6 +188,28 @@ describe("Hostaway MCP server", () => {
       "search_conversations",
       "search_reservations"
     ]);
+  });
+
+  test("advertises the package version by default", async () => {
+    const fakeClient = new FakeHostawayClient();
+    const server = createHostawayMcpServer({
+      client: fakeClient
+    });
+
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const versionClient = new Client({
+      name: "hostaway-version-client",
+      version: "1.0.0"
+    });
+
+    await Promise.all([server.connect(serverTransport), versionClient.connect(clientTransport)]);
+
+    expect(versionClient.getServerVersion()).toMatchObject({
+      name: "hostaway-mcp",
+      version: packageJson.version
+    });
+
+    await clientTransport.close();
   });
 
   test("lists unread guest threads with raw and derived attention fields", async () => {
