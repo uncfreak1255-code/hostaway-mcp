@@ -26,7 +26,7 @@ class FakeWriteClient {
 
   nextError: Error | null = null;
   nextReservationReadError: Error | null = null;
-  reservationNotes: Record<string, string> = {};
+  reservationHostNotes: Record<string, string> = {};
 
   async listConversations() {
     return [conversation201 as RawHostawayConversation];
@@ -59,9 +59,9 @@ class FakeWriteClient {
 
     if (`${reservationId}` === "501") {
       const base = reservation501 as RawHostawayReservationLike;
-      const notes = this.reservationNotes["501"];
-      if (notes !== undefined) {
-        return { ...base, notes } as unknown as RawHostawayReservationLike;
+      const hostNote = this.reservationHostNotes["501"];
+      if (hostNote !== undefined) {
+        return { ...base, hostNote } as unknown as RawHostawayReservationLike;
       }
       return base;
     }
@@ -172,7 +172,7 @@ describe("Write tools", () => {
       });
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
-      expect((result.structuredContent as { preview: { would_send: unknown } }).preview.would_send).toEqual({ isRead: 1 });
+      expect((result.structuredContent as { preview: { would_send: unknown } }).preview.would_send).toEqual({ hasUnreadMessages: 0 });
       expect(fakeClient.updateConversationCalls).toHaveLength(0);
     });
 
@@ -201,7 +201,7 @@ describe("Write tools", () => {
       expect(fakeClient.updateConversationCalls).toHaveLength(1);
       expect(fakeClient.updateConversationCalls[0]).toEqual({
         conversationId: 201,
-        body: { isRead: 1 }
+        body: { hasUnreadMessages: 0 }
       });
     });
 
@@ -291,7 +291,7 @@ describe("Write tools", () => {
     });
 
     test("dry-run in replace mode shows existing notes and warning", async () => {
-      fakeClient.reservationNotes["501"] = "Old existing note";
+      fakeClient.reservationHostNotes["501"] = "Old existing note";
 
       const result = await mcpClient.callTool({
         name: "add_reservation_note",
@@ -300,7 +300,7 @@ describe("Write tools", () => {
 
       const preview = (result.structuredContent as { preview: { existing_notes: string; warning: string } }).preview;
       expect(preview.existing_notes).toBe("Old existing note");
-      expect(preview.warning).toContain("overwrite");
+      expect(preview.warning).toContain("overwrite existing hostNote");
     });
 
     test("happy path — appends note (default mode)", async () => {
@@ -316,11 +316,11 @@ describe("Write tools", () => {
       });
 
       expect(fakeClient.updateReservationCalls).toHaveLength(1);
-      expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ notes: "Guest prefers early check-in" });
+      expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ hostNote: "Guest prefers early check-in" });
     });
 
     test("append mode concatenates with existing notes", async () => {
-      fakeClient.reservationNotes["501"] = "Existing note";
+      fakeClient.reservationHostNotes["501"] = "Existing note";
 
       const result = await mcpClient.callTool({
         name: "add_reservation_note",
@@ -332,7 +332,7 @@ describe("Write tools", () => {
         action: "note_appended"
       });
 
-      expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ notes: "Existing note\nNew note" });
+      expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ hostNote: "Existing note\nNew note" });
     });
 
     test("append mode fails closed when existing notes cannot be fetched", async () => {
@@ -350,7 +350,7 @@ describe("Write tools", () => {
     });
 
     test("replace mode sends only the new note", async () => {
-      fakeClient.reservationNotes["501"] = "Old note to be replaced";
+      fakeClient.reservationHostNotes["501"] = "Old note to be replaced";
 
       const result = await mcpClient.callTool({
         name: "add_reservation_note",
@@ -362,7 +362,7 @@ describe("Write tools", () => {
         action: "note_replaced"
       });
 
-      expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ notes: "Brand new note" });
+      expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ hostNote: "Brand new note" });
     });
 
     test("logs audit entry on successful execution", async () => {
