@@ -28,7 +28,7 @@ export function registerAddReservationNoteTool(
   server.registerTool(
     "add_reservation_note",
     {
-      description: "Add or replace the notes field on a reservation. Tier 1: notify after execution.",
+      description: "Add or replace the hostNote field on a reservation. Tier 1: notify after execution.",
       inputSchema: {
         reservationId: z.union([z.string(), z.number()]),
         note: z.string().min(1).max(2000),
@@ -46,7 +46,7 @@ export function registerAddReservationNoteTool(
         if (resolvedMode === "replace") {
           try {
             const reservation = await client.getReservation(reservationId);
-            existingNotes = (reservation as Record<string, unknown>).notes as string | null ?? null;
+            existingNotes = (reservation as Record<string, unknown>).hostNote as string | null ?? null;
           } catch {
             existingNotes = null;
           }
@@ -65,10 +65,10 @@ export function registerAddReservationNoteTool(
           reservationId: `${reservationId}`,
           mode: resolvedMode,
           note_preview: note,
-          ...(resolvedMode === "replace" ? { existing_notes: existingNotes, warning: "Replace mode will overwrite existing notes." } : {}),
+          ...(resolvedMode === "replace" ? { existing_notes: existingNotes, warning: "Replace mode will overwrite existing hostNote." } : {}),
           would_send: resolvedMode === "replace"
-            ? { notes: note }
-            : { notes: `(existing notes)\\n${note}` }
+            ? { hostNote: note }
+            : { hostNote: `(existing hostNote)\\n${note}` }
         });
       }
 
@@ -98,7 +98,7 @@ export function registerAddReservationNoteTool(
         if (resolvedMode === "append") {
           try {
             const reservation = await client.getReservation(reservationId);
-            const existing = (reservation as Record<string, unknown>).notes as string | undefined;
+            const existing = (reservation as Record<string, unknown>).hostNote as string | undefined;
             if (existing && existing.trim()) {
               finalNote = `${existing}\n${note}`;
             }
@@ -126,7 +126,7 @@ export function registerAddReservationNoteTool(
           }
         }
 
-        const result = await client.updateReservation(reservationId, { notes: finalNote });
+        const result = await client.updateReservation(reservationId, { hostNote: finalNote });
         const responseId = result && typeof result === "object" && "result" in result
           ? `${(result as { result?: { id?: unknown } }).result?.id ?? ""}`
           : null;

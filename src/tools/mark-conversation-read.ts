@@ -49,7 +49,7 @@ export function registerMarkConversationReadTool(
         return dryRunResult({
           action: "mark_conversation_read",
           conversationId: `${conversationId}`,
-          would_send: { isRead: 1 }
+          would_send: { hasUnreadMessages: 0 }
         });
       }
 
@@ -74,7 +74,7 @@ export function registerMarkConversationReadTool(
       }
 
       try {
-        const result = await client.updateConversation(conversationId, { isRead: 1 });
+        const result = await client.updateConversation(conversationId, { hasUnreadMessages: 0 });
         const responseId = result && typeof result === "object" && "result" in result
           ? `${(result as { result?: { id?: unknown } }).result?.id ?? ""}`
           : null;
