@@ -36,6 +36,18 @@ Run the stdio server locally:
 HOSTAWAY_API_TOKEN=your-token-here node dist/cli.js
 ```
 
+Create a local npm package tarball:
+
+```bash
+npm pack
+```
+
+After publish, run without cloning:
+
+```bash
+npx hostaway-mcp
+```
+
 ## MCP Client Wiring
 
 For local MCP clients, point the server command at the built CLI and provide the token
@@ -45,6 +57,18 @@ through the environment:
 {
   "command": "node",
   "args": ["/absolute/path/to/hostaway-mcp/dist/cli.js"],
+  "env": {
+    "HOSTAWAY_API_TOKEN": "your-token-here"
+  }
+}
+```
+
+After npm publish, clients can also spawn it with `npx`:
+
+```json
+{
+  "command": "npx",
+  "args": ["-y", "hostaway-mcp"],
   "env": {
     "HOSTAWAY_API_TOKEN": "your-token-here"
   }

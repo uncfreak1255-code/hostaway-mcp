@@ -1,0 +1,12 @@
+node_modules/
+src/
+tests/
+fixtures/
+docs/
+.githooks/
+.guardrails.json
+CLAUDE.md
+coverage/
+*.log
+tsconfig.json
+tsconfig.build.json

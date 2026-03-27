@@ -2,13 +2,22 @@
   "name": "hostaway-mcp",
   "version": "0.1.0",
   "description": "Read-only, hospitality-shaped MCP server for Hostaway",
+  "homepage": "https://github.com/uncfreak1255-code/hostaway-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/uncfreak1255-code/hostaway-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uncfreak1255-code/hostaway-mcp.git"
+  },
   "type": "module",
   "bin": {
     "hostaway-mcp": "./dist/cli.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=22"
@@ -27,6 +36,9 @@
     "hospitality"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
     "zod": "^4.3.6"
