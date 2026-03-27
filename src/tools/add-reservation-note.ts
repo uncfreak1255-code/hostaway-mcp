@@ -33,7 +33,7 @@ export function registerAddReservationNoteTool(
         reservationId: z.union([z.string(), z.number()]),
         note: z.string().min(1).max(2000),
         mode: z.enum(["append", "replace"]).optional(),
-        confirm: z.boolean()
+        confirm: z.boolean().optional()
       }
     },
     async ({ reservationId, note, mode, confirm }) => {
@@ -102,8 +102,27 @@ export function registerAddReservationNoteTool(
             if (existing && existing.trim()) {
               finalNote = `${existing}\n${note}`;
             }
-          } catch {
-            // If we can't fetch existing notes, just use the new note as-is
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "Unknown error";
+
+            await auditLogger.log({
+              ts: new Date().toISOString(),
+              tool: "add_reservation_note",
+              params: truncateParams(params),
+              result_status: "error",
+              hostaway_response_id: null,
+              error: message
+            });
+
+            return {
+              content: [
+                {
+                  type: "text" as const,
+                  text: `Failed to fetch existing reservation notes before append: ${message}`
+                }
+              ],
+              isError: true
+            };
           }
         }
 

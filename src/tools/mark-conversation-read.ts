@@ -31,7 +31,7 @@ export function registerMarkConversationReadTool(
       description: "Mark a guest conversation as read. Tier 0: safe to auto-execute.",
       inputSchema: {
         conversationId: z.union([z.string(), z.number()]),
-        confirm: z.boolean()
+        confirm: z.boolean().optional()
       }
     },
     async ({ conversationId, confirm }) => {

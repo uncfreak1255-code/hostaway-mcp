@@ -25,6 +25,7 @@ class FakeWriteClient {
   sendMessageCalls: Array<{ conversationId: string | number; body: Record<string, unknown> }> = [];
 
   nextError: Error | null = null;
+  nextReservationReadError: Error | null = null;
   reservationNotes: Record<string, string> = {};
 
   async listConversations() {
@@ -50,6 +51,12 @@ class FakeWriteClient {
   }
 
   async getReservation(reservationId: string | number) {
+    if (this.nextReservationReadError) {
+      const err = this.nextReservationReadError;
+      this.nextReservationReadError = null;
+      throw err;
+    }
+
     if (`${reservationId}` === "501") {
       const base = reservation501 as RawHostawayReservationLike;
       const notes = this.reservationNotes["501"];
@@ -170,11 +177,9 @@ describe("Write tools", () => {
     });
 
     test("dry-run when confirm is missing — no HTTP call made", async () => {
-      // Zod requires confirm as boolean, so the MCP framework will validate.
-      // But if somehow false is passed, it should still dry-run.
       const result = await mcpClient.callTool({
         name: "mark_conversation_read",
-        arguments: { conversationId: 201, confirm: false }
+        arguments: { conversationId: 201 }
       });
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
@@ -275,6 +280,16 @@ describe("Write tools", () => {
       expect(fakeClient.updateReservationCalls).toHaveLength(0);
     });
 
+    test("dry-run when confirm is missing — no HTTP call made", async () => {
+      const result = await mcpClient.callTool({
+        name: "add_reservation_note",
+        arguments: { reservationId: 501, note: "Test note" }
+      });
+
+      expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
+      expect(fakeClient.updateReservationCalls).toHaveLength(0);
+    });
+
     test("dry-run in replace mode shows existing notes and warning", async () => {
       fakeClient.reservationNotes["501"] = "Old existing note";
 
@@ -318,6 +333,20 @@ describe("Write tools", () => {
       });
 
       expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ notes: "Existing note\nNew note" });
+    });
+
+    test("append mode fails closed when existing notes cannot be fetched", async () => {
+      fakeClient.nextReservationReadError = new Error("Reservation 501 fetch failed");
+
+      const result = await mcpClient.callTool({
+        name: "add_reservation_note",
+        arguments: { reservationId: 501, note: "New note", mode: "append", confirm: true }
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content as Array<{ text: string }>)[0]!.text;
+      expect(text).toContain("Failed to fetch existing reservation notes");
+      expect(fakeClient.updateReservationCalls).toHaveLength(0);
     });
 
     test("replace mode sends only the new note", async () => {
@@ -409,6 +438,29 @@ describe("Write tools", () => {
         channel: "Airbnb"
       });
       expect(structured.preview.warning).toContain("IMMEDIATELY");
+      expect(fakeClient.sendMessageCalls).toHaveLength(0);
+    });
+
+    test("dry-run when confirm is missing — no HTTP call, returns preview with context", async () => {
+      const result = await mcpClient.callTool({
+        name: "send_guest_message",
+        arguments: { conversationId: 201, body: "Hello, welcome!" }
+      });
+
+      const structured = result.structuredContent as {
+        dry_run: boolean;
+        preview: {
+          message_preview: string;
+          conversation_context: { guestName: string; channel: string } | null;
+        };
+      };
+
+      expect(structured.dry_run).toBe(true);
+      expect(structured.preview.message_preview).toBe("Hello, welcome!");
+      expect(structured.preview.conversation_context).toMatchObject({
+        guestName: "Jane Smith",
+        channel: "Airbnb"
+      });
       expect(fakeClient.sendMessageCalls).toHaveLength(0);
     });
 
@@ -585,28 +637,28 @@ describe("Write tools", () => {
   // ---- Confirmation guard integration ----
 
   describe("confirmation guard across all tools", () => {
-    test("mark_conversation_read requires confirm: true", async () => {
+    test("mark_conversation_read defaults to dry-run when confirm is omitted", async () => {
       const result = await mcpClient.callTool({
         name: "mark_conversation_read",
-        arguments: { conversationId: 201, confirm: false }
+        arguments: { conversationId: 201 }
       });
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.updateConversationCalls).toHaveLength(0);
     });
 
-    test("add_reservation_note requires confirm: true", async () => {
+    test("add_reservation_note defaults to dry-run when confirm is omitted", async () => {
       const result = await mcpClient.callTool({
         name: "add_reservation_note",
-        arguments: { reservationId: 501, note: "Test", confirm: false }
+        arguments: { reservationId: 501, note: "Test" }
       });
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.updateReservationCalls).toHaveLength(0);
     });
 
-    test("send_guest_message requires confirm: true", async () => {
+    test("send_guest_message defaults to dry-run when confirm is omitted", async () => {
       const result = await mcpClient.callTool({
         name: "send_guest_message",
-        arguments: { conversationId: 201, body: "Test", confirm: false }
+        arguments: { conversationId: 201, body: "Test" }
       });
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.sendMessageCalls).toHaveLength(0);
