@@ -63,9 +63,10 @@ export function createHostawayMcpServer({
   registerSearchReservationsTool(server, client);
   registerSearchConversationsTool(server, client);
 
-  // Write tools — only register if the client supports write operations
+  // Write tools — skipped entirely when HOSTAWAY_MCP_READONLY=true
+  const readonlyMode = process.env.HOSTAWAY_MCP_READONLY === "true";
   const writeClient = client as HostawayWriteClient;
-  if (typeof writeClient.updateConversation === "function") {
+  if (!readonlyMode && typeof writeClient.updateConversation === "function") {
     const logger = auditLogger ?? new JsonlAuditLogger();
     const limiter = rateLimiter ?? new WriteRateLimiter();
 

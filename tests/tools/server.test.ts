@@ -138,6 +138,71 @@ class FakeHostawayClient {
   }
 }
 
+class FakeWriteHostawayClient extends FakeHostawayClient {
+  async updateConversation(_conversationId: string | number, _body: Record<string, unknown>) {
+    return { status: "success" };
+  }
+
+  async updateReservation(_reservationId: string | number, _body: Record<string, unknown>) {
+    return { status: "success" };
+  }
+
+  async sendMessage(_conversationId: string | number, _body: Record<string, unknown>) {
+    return { status: "success" };
+  }
+}
+
+describe("HOSTAWAY_MCP_READONLY flag", () => {
+  afterEach(() => {
+    delete process.env.HOSTAWAY_MCP_READONLY;
+  });
+
+  test("when HOSTAWAY_MCP_READONLY=true, write tools are not registered", async () => {
+    process.env.HOSTAWAY_MCP_READONLY = "true";
+    const fakeClient = new FakeWriteHostawayClient();
+    const server = createHostawayMcpServer({ client: fakeClient, name: "test", version: "0.0.0" });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const mcpClient = new Client({ name: "test-client", version: "1.0.0" });
+    await Promise.all([server.connect(serverTransport), mcpClient.connect(clientTransport)]);
+    const result = await mcpClient.listTools();
+    const names = result.tools.map((t) => t.name);
+    expect(names).not.toContain("mark_conversation_read");
+    expect(names).not.toContain("add_reservation_note");
+    expect(names).not.toContain("send_guest_message");
+    await clientTransport.close();
+  });
+
+  test("when HOSTAWAY_MCP_READONLY is unset, write tools are registered", async () => {
+    delete process.env.HOSTAWAY_MCP_READONLY;
+    const fakeClient = new FakeWriteHostawayClient();
+    const server = createHostawayMcpServer({ client: fakeClient, name: "test", version: "0.0.0" });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const mcpClient = new Client({ name: "test-client", version: "1.0.0" });
+    await Promise.all([server.connect(serverTransport), mcpClient.connect(clientTransport)]);
+    const result = await mcpClient.listTools();
+    const names = result.tools.map((t) => t.name);
+    expect(names).toContain("mark_conversation_read");
+    expect(names).toContain("add_reservation_note");
+    expect(names).toContain("send_guest_message");
+    await clientTransport.close();
+  });
+
+  test("when HOSTAWAY_MCP_READONLY=false, write tools are registered", async () => {
+    process.env.HOSTAWAY_MCP_READONLY = "false";
+    const fakeClient = new FakeWriteHostawayClient();
+    const server = createHostawayMcpServer({ client: fakeClient, name: "test", version: "0.0.0" });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const mcpClient = new Client({ name: "test-client", version: "1.0.0" });
+    await Promise.all([server.connect(serverTransport), mcpClient.connect(clientTransport)]);
+    const result = await mcpClient.listTools();
+    const names = result.tools.map((t) => t.name);
+    expect(names).toContain("mark_conversation_read");
+    expect(names).toContain("add_reservation_note");
+    expect(names).toContain("send_guest_message");
+    await clientTransport.close();
+  });
+});
+
 describe("Hostaway MCP server", () => {
   let client: Client;
   let transport: InMemoryTransport;

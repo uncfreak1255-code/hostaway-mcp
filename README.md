@@ -118,6 +118,14 @@ CLI directly:
 }
 ```
 
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `HOSTAWAY_API_TOKEN` | Yes | Your Hostaway API token. |
+| `HOSTAWAY_BASE_URL` | No | Override the Hostaway API base URL. Defaults to the production endpoint. |
+| `HOSTAWAY_MCP_READONLY` | No | Set to `true` to disable all write tools. Only read-only tools will be available. Default: writes enabled (with confirmation guard on every operation). |
+
 ## V1 Non-Goals
 
 - sending guest messages
