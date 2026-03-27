@@ -169,12 +169,10 @@ describe("Write tools", () => {
       expect(fakeClient.updateConversationCalls).toHaveLength(0);
     });
 
-    test("dry-run when confirm is missing — no HTTP call made", async () => {
-      // Zod requires confirm as boolean, so the MCP framework will validate.
-      // But if somehow false is passed, it should still dry-run.
+    test("dry-run when confirm is omitted entirely — returns preview, not schema error", async () => {
       const result = await mcpClient.callTool({
         name: "mark_conversation_read",
-        arguments: { conversationId: 201, confirm: false }
+        arguments: { conversationId: 201 }
       });
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
@@ -269,6 +267,16 @@ describe("Write tools", () => {
       const result = await mcpClient.callTool({
         name: "add_reservation_note",
         arguments: { reservationId: 501, note: "Test note", confirm: false }
+      });
+
+      expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
+      expect(fakeClient.updateReservationCalls).toHaveLength(0);
+    });
+
+    test("dry-run when confirm is omitted entirely — returns preview, not schema error", async () => {
+      const result = await mcpClient.callTool({
+        name: "add_reservation_note",
+        arguments: { reservationId: 501, note: "Test note" }
       });
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
@@ -386,6 +394,16 @@ describe("Write tools", () => {
   // ---- send_guest_message ----
 
   describe("send_guest_message", () => {
+    test("dry-run when confirm is omitted entirely — returns preview, not schema error", async () => {
+      const result = await mcpClient.callTool({
+        name: "send_guest_message",
+        arguments: { conversationId: 201, body: "Hello, welcome!" }
+      });
+
+      expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
+      expect(fakeClient.sendMessageCalls).toHaveLength(0);
+    });
+
     test("dry-run when confirm is false — no HTTP call, returns preview with context", async () => {
       const result = await mcpClient.callTool({
         name: "send_guest_message",
