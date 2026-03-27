@@ -184,6 +184,7 @@ describe("Write tools", () => {
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.updateConversationCalls).toHaveLength(0);
+      expect(auditLogger.entries.at(-1)?.params).toContain("\"confirm\":false");
     });
 
     test("happy path — marks conversation as read", async () => {
@@ -288,6 +289,7 @@ describe("Write tools", () => {
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.updateReservationCalls).toHaveLength(0);
+      expect(auditLogger.entries.at(-1)?.params).toContain("\"confirm\":false");
     });
 
     test("dry-run in replace mode shows existing notes and warning", async () => {
@@ -462,6 +464,7 @@ describe("Write tools", () => {
         channel: "Airbnb"
       });
       expect(fakeClient.sendMessageCalls).toHaveLength(0);
+      expect(auditLogger.entries.at(-1)?.params).toContain("\"confirm\":false");
     });
 
     test("happy path — sends message", async () => {
