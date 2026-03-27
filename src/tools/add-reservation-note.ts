@@ -33,7 +33,7 @@ export function registerAddReservationNoteTool(
         reservationId: z.union([z.string(), z.number()]),
         note: z.string().min(1).max(2000),
         mode: z.enum(["append", "replace"]).optional(),
-        confirm: z.boolean().optional()
+        confirm: z.boolean().optional().default(false)
       }
     },
     async ({ reservationId, note, mode, confirm }) => {

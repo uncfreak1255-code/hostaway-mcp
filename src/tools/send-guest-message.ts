@@ -33,7 +33,7 @@ export function registerSendGuestMessageTool(
       inputSchema: {
         conversationId: z.union([z.string(), z.number()]),
         body: z.string().min(1).max(4000),
-        confirm: z.boolean().optional()
+        confirm: z.boolean().optional().default(false)
       }
     },
     async ({ conversationId, body, confirm }) => {
