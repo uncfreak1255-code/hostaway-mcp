@@ -170,11 +170,9 @@ describe("Write tools", () => {
     });
 
     test("dry-run when confirm is missing — no HTTP call made", async () => {
-      // Zod requires confirm as boolean, so the MCP framework will validate.
-      // But if somehow false is passed, it should still dry-run.
       const result = await mcpClient.callTool({
         name: "mark_conversation_read",
-        arguments: { conversationId: 201, confirm: false }
+        arguments: { conversationId: 201 }
       });
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
@@ -269,6 +267,16 @@ describe("Write tools", () => {
       const result = await mcpClient.callTool({
         name: "add_reservation_note",
         arguments: { reservationId: 501, note: "Test note", confirm: false }
+      });
+
+      expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
+      expect(fakeClient.updateReservationCalls).toHaveLength(0);
+    });
+
+    test("dry-run when confirm is missing — no HTTP call made", async () => {
+      const result = await mcpClient.callTool({
+        name: "add_reservation_note",
+        arguments: { reservationId: 501, note: "Test note" }
       });
 
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
@@ -409,6 +417,29 @@ describe("Write tools", () => {
         channel: "Airbnb"
       });
       expect(structured.preview.warning).toContain("IMMEDIATELY");
+      expect(fakeClient.sendMessageCalls).toHaveLength(0);
+    });
+
+    test("dry-run when confirm is missing — no HTTP call, returns preview with context", async () => {
+      const result = await mcpClient.callTool({
+        name: "send_guest_message",
+        arguments: { conversationId: 201, body: "Hello, welcome!" }
+      });
+
+      const structured = result.structuredContent as {
+        dry_run: boolean;
+        preview: {
+          message_preview: string;
+          conversation_context: { guestName: string; channel: string } | null;
+        };
+      };
+
+      expect(structured.dry_run).toBe(true);
+      expect(structured.preview.message_preview).toBe("Hello, welcome!");
+      expect(structured.preview.conversation_context).toMatchObject({
+        guestName: "Jane Smith",
+        channel: "Airbnb"
+      });
       expect(fakeClient.sendMessageCalls).toHaveLength(0);
     });
 
@@ -585,28 +616,28 @@ describe("Write tools", () => {
   // ---- Confirmation guard integration ----
 
   describe("confirmation guard across all tools", () => {
-    test("mark_conversation_read requires confirm: true", async () => {
+    test("mark_conversation_read defaults to dry-run when confirm is omitted", async () => {
       const result = await mcpClient.callTool({
         name: "mark_conversation_read",
-        arguments: { conversationId: 201, confirm: false }
+        arguments: { conversationId: 201 }
       });
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.updateConversationCalls).toHaveLength(0);
     });
 
-    test("add_reservation_note requires confirm: true", async () => {
+    test("add_reservation_note defaults to dry-run when confirm is omitted", async () => {
       const result = await mcpClient.callTool({
         name: "add_reservation_note",
-        arguments: { reservationId: 501, note: "Test", confirm: false }
+        arguments: { reservationId: 501, note: "Test" }
       });
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.updateReservationCalls).toHaveLength(0);
     });
 
-    test("send_guest_message requires confirm: true", async () => {
+    test("send_guest_message defaults to dry-run when confirm is omitted", async () => {
       const result = await mcpClient.callTool({
         name: "send_guest_message",
-        arguments: { conversationId: 201, body: "Test", confirm: false }
+        arguments: { conversationId: 201, body: "Test" }
       });
       expect((result.structuredContent as { dry_run: boolean }).dry_run).toBe(true);
       expect(fakeClient.sendMessageCalls).toHaveLength(0);
