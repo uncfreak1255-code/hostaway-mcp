@@ -440,4 +440,42 @@ describe("HOSTAWAY_MCP_READONLY flag", () => {
     expect(names).toContain("send_guest_message");
     expect(names).toHaveLength(9);
   });
+
+  test("registers only the write tools the client actually supports", async () => {
+    vi.stubEnv("HOSTAWAY_MCP_READONLY", "false");
+
+    const partialWriteClient = {
+      listConversations: async () => [],
+      getConversation: async () => { throw new Error("not found"); },
+      getConversationMessages: async () => [],
+      listReservations: async () => [],
+      getReservation: async () => { throw new Error("not found"); },
+      listListings: async () => [],
+      getListing: async () => { throw new Error("not found"); },
+      updateConversation: async () => ({ status: "success" as const, result: {} })
+    };
+
+    const server = createHostawayMcpServer({
+      client: partialWriteClient,
+      name: "hostaway-mcp-partial-write-test",
+      version: "0.1.0-test"
+    });
+
+    const { InMemoryTransport } = await import("@modelcontextprotocol/sdk/inMemory.js");
+    const { Client } = await import("@modelcontextprotocol/sdk/client/index.js");
+
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const partialClient = new Client({ name: "partial-write-test-client", version: "1.0.0" });
+
+    await Promise.all([server.connect(serverTransport), partialClient.connect(clientTransport)]);
+
+    const result = await partialClient.listTools();
+    await clientTransport.close();
+
+    const names = result.tools.map((t) => t.name).sort();
+    expect(names).toContain("mark_conversation_read");
+    expect(names).not.toContain("add_reservation_note");
+    expect(names).not.toContain("send_guest_message");
+    expect(names).toHaveLength(7);
+  });
 });

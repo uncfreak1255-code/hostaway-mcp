@@ -25,6 +25,7 @@ class FakeWriteClient {
   sendMessageCalls: Array<{ conversationId: string | number; body: Record<string, unknown> }> = [];
 
   nextError: Error | null = null;
+  nextReservationReadError: Error | null = null;
   reservationNotes: Record<string, string> = {};
 
   async listConversations() {
@@ -50,6 +51,12 @@ class FakeWriteClient {
   }
 
   async getReservation(reservationId: string | number) {
+    if (this.nextReservationReadError) {
+      const err = this.nextReservationReadError;
+      this.nextReservationReadError = null;
+      throw err;
+    }
+
     if (`${reservationId}` === "501") {
       const base = reservation501 as RawHostawayReservationLike;
       const notes = this.reservationNotes["501"];
@@ -326,6 +333,20 @@ describe("Write tools", () => {
       });
 
       expect(fakeClient.updateReservationCalls[0]!.body).toEqual({ notes: "Existing note\nNew note" });
+    });
+
+    test("append mode fails closed when existing notes cannot be fetched", async () => {
+      fakeClient.nextReservationReadError = new Error("Reservation 501 fetch failed");
+
+      const result = await mcpClient.callTool({
+        name: "add_reservation_note",
+        arguments: { reservationId: 501, note: "New note", mode: "append", confirm: true }
+      });
+
+      expect(result.isError).toBe(true);
+      const text = (result.content as Array<{ text: string }>)[0]!.text;
+      expect(text).toContain("Failed to fetch existing reservation notes");
+      expect(fakeClient.updateReservationCalls).toHaveLength(0);
     });
 
     test("replace mode sends only the new note", async () => {
