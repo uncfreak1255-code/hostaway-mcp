@@ -1,6 +1,6 @@
 {
   "name": "hostaway-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Read-only, hospitality-shaped MCP server for Hostaway",
   "homepage": "https://github.com/uncfreak1255-code/hostaway-mcp#readme",
   "bugs": {
