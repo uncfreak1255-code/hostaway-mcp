@@ -99,8 +99,8 @@ export default {
     try {
       return await handleRequest(request, env);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Internal server error";
-      return errorResponse(message, 500);
+      console.error("[WORKER]", err);
+      return errorResponse("Internal server error", 500);
     }
   },
 
