@@ -79,6 +79,10 @@ class FakeWriteClient {
     throw new Error(`Listing ${listingId} not found`);
   }
 
+  async getCalendar() {
+    return [];
+  }
+
   async updateConversation(conversationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult> {
     if (this.nextError) {
       const err = this.nextError;

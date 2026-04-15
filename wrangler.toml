@@ -1,0 +1,13 @@
+name = "hostaway-mcp-distribution"
+main = "src/worker.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+ENVIRONMENT = "production"
+
+[[kv_namespaces]]
+binding = "PROPERTY_CACHE"
+id = "placeholder-will-be-set-on-deploy"
+
+[triggers]
+crons = ["*/15 * * * *"]

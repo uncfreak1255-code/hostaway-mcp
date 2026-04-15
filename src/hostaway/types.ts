@@ -104,3 +104,18 @@ export interface ConversationMessageSummary {
   timestamp: string | null;
   hasAttachments: boolean;
 }
+
+export interface HostawayCalendarDay {
+  id: number;
+  date: string;
+  isAvailable: 0 | 1;
+  status: string;
+  price: number;
+  minimumStay: number;
+  maximumStay: number;
+  closedOnArrival: 0 | 1;
+  closedOnDeparture: 0 | 1;
+  note: string | null;
+  countAvailableUnits: number;
+  availableUnitsToSell: number;
+}
