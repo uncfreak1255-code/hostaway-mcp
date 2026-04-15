@@ -124,6 +124,24 @@ describe("get_rates", () => {
     expect(content.error).toMatch(/invalid.*date/i);
   });
 
+  test("returns error for partial calendar response", async () => {
+    // Request 3 nights but API only returns 2 days
+    const partialCalendar = [
+      makeCalendarDay({ date: "2026-06-01", price: 200 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200 }),
+    ];
+
+    await connect(makeFakeClient(partialCalendar));
+
+    const result = await client.callTool({
+      name: "get_rates",
+      arguments: { listing_id: 206016, checkin: "2026-06-01", checkout: "2026-06-04" },
+    });
+
+    const content = result.structuredContent as { error: string };
+    expect(content.error).toMatch(/incomplete.*calendar/i);
+  });
+
   test("handles unavailable nights correctly", async () => {
     const calendar = [
       makeCalendarDay({ date: "2026-06-01", price: 200, isAvailable: 1 }),

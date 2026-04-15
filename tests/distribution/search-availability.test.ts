@@ -252,6 +252,35 @@ describe("search_availability", () => {
     expect(content.error).toMatch(/invalid.*date/i);
   });
 
+  test("treats partial calendar response as unavailable", async () => {
+    // Request 3 nights but API only returns 2 days
+    const partialCalendar = [
+      makeCalendarDay({ date: "2026-06-01", price: 200 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200 }),
+    ];
+
+    const calendarByListing: Record<number, HostawayCalendarDay[]> = {
+      206016: partialCalendar,
+      135880: partialCalendar,
+      135881: partialCalendar,
+      189511: partialCalendar,
+      487798: partialCalendar,
+    };
+
+    await connect(makeFakeClient(calendarByListing));
+
+    const result = await client.callTool({
+      name: "search_availability",
+      arguments: { checkin: "2026-06-01", checkout: "2026-06-04", guests: 2 },
+    });
+
+    const content = result.structuredContent as {
+      results: Array<{ listing_id: number; available: boolean }>;
+    };
+    // 3 nights requested but only 2 days returned — all should be unavailable
+    expect(content.results.every((r) => !r.available)).toBe(true);
+  });
+
   test("sorts by total price ascending", async () => {
     const cheap = [
       makeCalendarDay({ date: "2026-06-01", price: 100 }),

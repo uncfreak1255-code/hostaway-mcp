@@ -76,6 +76,16 @@ export function registerGetRatesTool(server: McpServer, client: HostawayDataClie
         const cached = kv ? await getCachedCalendar(kv, listing_id, checkin, checkout) : null;
         const calendar = cached ?? await client.getCalendar(listing_id, checkin, checkout);
 
+        if (calendar.length !== nights) {
+          return toolResult({
+            listing_id,
+            name: property.name,
+            checkin,
+            checkout,
+            error: `Incomplete calendar data: expected ${nights} nights, got ${calendar.length}`
+          });
+        }
+
         const rates = calendar.map((day) => ({
           date: day.date,
           price: day.price,

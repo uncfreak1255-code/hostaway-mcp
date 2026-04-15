@@ -114,8 +114,18 @@ export function registerSearchAvailabilityTool(server: McpServer, client: Hostaw
             };
           }
 
+          // Verify API returned exactly the number of nights requested
+          if (calendar.length !== requestedNights) {
+            return {
+              listing_id: listingId,
+              name: property.name,
+              available: false,
+              error: "Incomplete calendar data"
+            };
+          }
+
           // A property is available if ALL nights in the range are available
-          const allAvailable = calendar.length > 0 && calendar.every((day) => day.isAvailable === 1);
+          const allAvailable = calendar.every((day) => day.isAvailable === 1);
 
           if (!allAvailable) {
             return {
