@@ -9,6 +9,14 @@ import { getCachedCalendar } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, SEASCAPE_LISTING_IDS } from "./properties.js";
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDateString(s: string): boolean {
+  if (!DATE_RE.test(s)) return false;
+  const d = new Date(s + "T00:00:00Z");
+  return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
 function toolResult<T>(structuredContent: T) {
   return {
     content: [
@@ -67,6 +75,13 @@ export function registerSearchAvailabilityTool(server: McpServer, client: Hostaw
       }
     },
     async ({ checkin, checkout, guests, pets, minimum_nights_ok }) => {
+      if (!isValidDateString(checkin) || !isValidDateString(checkout)) {
+        return toolResult({
+          error: "Invalid date format. Use YYYY-MM-DD with a real calendar date.",
+          results: []
+        });
+      }
+
       const requestedNights = Math.round(
         (new Date(checkout).getTime() - new Date(checkin).getTime()) / (1000 * 60 * 60 * 24)
       );

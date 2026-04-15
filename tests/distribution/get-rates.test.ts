@@ -100,6 +100,30 @@ describe("get_rates", () => {
     expect(content.summary.max_night).toBe(300);
   });
 
+  test("rejects invalid date format", async () => {
+    await connect(makeFakeClient([]));
+
+    const result = await client.callTool({
+      name: "get_rates",
+      arguments: { listing_id: 206016, checkin: "not-a-date", checkout: "2026-06-04" },
+    });
+
+    const content = result.structuredContent as { error: string };
+    expect(content.error).toMatch(/invalid.*date/i);
+  });
+
+  test("rejects non-existent date like Feb 30", async () => {
+    await connect(makeFakeClient([]));
+
+    const result = await client.callTool({
+      name: "get_rates",
+      arguments: { listing_id: 206016, checkin: "2026-02-30", checkout: "2026-03-02" },
+    });
+
+    const content = result.structuredContent as { error: string };
+    expect(content.error).toMatch(/invalid.*date/i);
+  });
+
   test("handles unavailable nights correctly", async () => {
     const calendar = [
       makeCalendarDay({ date: "2026-06-01", price: 200, isAvailable: 1 }),

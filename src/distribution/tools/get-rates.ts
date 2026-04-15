@@ -8,6 +8,14 @@ import { getCachedCalendar } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, getPropertyNames } from "./properties.js";
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDateString(s: string): boolean {
+  if (!DATE_RE.test(s)) return false;
+  const d = new Date(s + "T00:00:00Z");
+  return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
 function toolResult<T>(structuredContent: T) {
   return {
     content: [
@@ -40,6 +48,12 @@ export function registerGetRatesTool(server: McpServer, client: HostawayDataClie
       }
     },
     async ({ listing_id, checkin, checkout }) => {
+      if (!isValidDateString(checkin) || !isValidDateString(checkout)) {
+        return toolResult({
+          error: "Invalid date format. Use YYYY-MM-DD with a real calendar date."
+        });
+      }
+
       const property = SEASCAPE_PROPERTIES[listing_id];
 
       if (!property) {

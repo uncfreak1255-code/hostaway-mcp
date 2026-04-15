@@ -228,6 +228,30 @@ describe("search_availability", () => {
     expect(failed.length).toBeGreaterThanOrEqual(1);
   });
 
+  test("rejects invalid date format", async () => {
+    await connect(makeFakeClient({}));
+
+    const result = await client.callTool({
+      name: "search_availability",
+      arguments: { checkin: "foo", checkout: "2026-06-03", guests: 2 },
+    });
+
+    const content = result.structuredContent as { error: string };
+    expect(content.error).toMatch(/invalid.*date/i);
+  });
+
+  test("rejects non-existent date", async () => {
+    await connect(makeFakeClient({}));
+
+    const result = await client.callTool({
+      name: "search_availability",
+      arguments: { checkin: "2026-02-30", checkout: "2026-03-02", guests: 2 },
+    });
+
+    const content = result.structuredContent as { error: string };
+    expect(content.error).toMatch(/invalid.*date/i);
+  });
+
   test("sorts by total price ascending", async () => {
     const cheap = [
       makeCalendarDay({ date: "2026-06-01", price: 100 }),
