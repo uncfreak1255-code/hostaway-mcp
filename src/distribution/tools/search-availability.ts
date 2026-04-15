@@ -9,12 +9,22 @@ import { getCachedCalendar } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, SEASCAPE_LISTING_IDS } from "./properties.js";
 
+const MS_PER_DAY = 86_400_000;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function isValidDateString(s: string): boolean {
   if (!DATE_RE.test(s)) return false;
   const d = new Date(s + "T00:00:00Z");
   return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
+function dateRange(checkin: string, nights: number): string[] {
+  const dates: string[] = [];
+  const start = new Date(checkin + "T00:00:00Z");
+  for (let i = 0; i < nights; i++) {
+    dates.push(new Date(start.getTime() + i * MS_PER_DAY).toISOString().slice(0, 10));
+  }
+  return dates;
 }
 
 function toolResult<T>(structuredContent: T) {
@@ -83,7 +93,7 @@ export function registerSearchAvailabilityTool(server: McpServer, client: Hostaw
       }
 
       const requestedNights = Math.round(
-        (new Date(checkout).getTime() - new Date(checkin).getTime()) / (1000 * 60 * 60 * 24)
+        (new Date(checkout).getTime() - new Date(checkin).getTime()) / MS_PER_DAY
       );
 
       if (requestedNights < 1) {
@@ -106,7 +116,8 @@ export function registerSearchAvailabilityTool(server: McpServer, client: Hostaw
 
           let calendar: HostawayCalendarDay[];
           try {
-            const cached = kv ? await getCachedCalendar(kv, listingId, checkin, checkout) : null;
+            const dates = dateRange(checkin, requestedNights);
+            const cached = kv ? await getCachedCalendar(kv, listingId, dates) : null;
             calendar = cached ?? await client.getCalendar(listingId, checkin, checkout);
           } catch {
             return {

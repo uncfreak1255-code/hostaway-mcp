@@ -3,8 +3,8 @@
 // KV cache read/write helpers for the distribution layer.
 //
 // Key format:
-//   "property:{listingId}"                         — listing data
-//   "calendar:{listingId}:{startDate}:{endDate}"   — calendar data
+//   "property:{listingId}"    — listing data
+//   "cal:{listingId}:{date}"  — single calendar day
 //
 // TTL: 1200 seconds (20 minutes) — slightly longer than the 15-min cron
 // interval so stale reads never happen during normal operation.
@@ -38,33 +38,46 @@ export async function putCachedListing(
   });
 }
 
-// ── Calendar cache ─────────────────────────────────────────────────────
+// ── Calendar cache (per-day keys) ─────────────────────────────────────
 
+/**
+ * Read cached calendar days for a set of dates.
+ * Returns all days in order if every date is cached, or null if any is missing.
+ */
 export async function getCachedCalendar(
   kv: KVNamespace,
   listingId: number,
-  startDate: string,
-  endDate: string
+  dates: string[]
 ): Promise<HostawayCalendarDay[] | null> {
   try {
-    const raw = await kv.get(`calendar:${listingId}:${startDate}:${endDate}`);
-    if (raw === null) return null;
-    return JSON.parse(raw) as HostawayCalendarDay[];
+    const results = await Promise.all(
+      dates.map((date) => kv.get(`cal:${listingId}:${date}`))
+    );
+    const days: HostawayCalendarDay[] = [];
+    for (const raw of results) {
+      if (raw === null) return null;
+      days.push(JSON.parse(raw) as HostawayCalendarDay);
+    }
+    return days;
   } catch {
     return null;
   }
 }
 
+/**
+ * Write calendar days to cache — one KV key per day.
+ * Cron pre-warm writes the full 90-day window; tools never write.
+ */
 export async function putCachedCalendar(
   kv: KVNamespace,
   listingId: number,
-  startDate: string,
-  endDate: string,
   data: HostawayCalendarDay[]
 ): Promise<void> {
-  await kv.put(
-    `calendar:${listingId}:${startDate}:${endDate}`,
-    JSON.stringify(data),
-    { expirationTtl: DEFAULT_TTL_SECONDS }
+  await Promise.all(
+    data.map((day) =>
+      kv.put(`cal:${listingId}:${day.date}`, JSON.stringify(day), {
+        expirationTtl: DEFAULT_TTL_SECONDS,
+      })
+    )
   );
 }

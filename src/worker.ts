@@ -126,7 +126,7 @@ export default {
 
         await Promise.all([
           putCachedListing(kv, listingId, listing),
-          putCachedCalendar(kv, listingId, startDate, endDate, calendar),
+          putCachedCalendar(kv, listingId, calendar),
         ]);
 
         success++;
