@@ -27,11 +27,11 @@ function makeDay(date: string, price = 200): HostawayCalendarDay {
 
 /** In-memory KVNamespace mock */
 function makeMockKV(): KVNamespace {
-  const store = new Map<string, { value: string; expiration?: number }>();
+  const store = new Map<string, string>();
   return {
-    get: async (key: string) => store.get(key)?.value ?? null,
-    put: async (key: string, value: string, opts?: { expirationTtl?: number }) => {
-      store.set(key, { value, expiration: opts?.expirationTtl });
+    get: async (key: string) => store.get(key) ?? null,
+    put: async (key: string, value: string) => {
+      store.set(key, value);
     },
     delete: async (key: string) => { store.delete(key); },
     list: async () => ({ keys: [], list_complete: true, cacheStatus: null }),
