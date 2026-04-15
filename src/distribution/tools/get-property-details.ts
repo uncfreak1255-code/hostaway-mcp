@@ -7,18 +7,7 @@ import type { HostawayDataClient } from "../../hostaway/client.js";
 import { getCachedListing } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, getPropertyNames } from "./properties.js";
-
-function toolResult<T>(structuredContent: T) {
-  return {
-    content: [
-      {
-        type: "text" as const,
-        text: JSON.stringify(structuredContent, null, 2)
-      }
-    ],
-    structuredContent
-  };
-}
+import { toolResult } from "./tool-result.js";
 
 export function registerGetPropertyDetailsTool(server: McpServer, client: HostawayDataClient, kv?: KVNamespace) {
   server.registerTool(

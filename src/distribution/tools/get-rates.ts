@@ -7,8 +7,8 @@ import type { HostawayDataClient } from "../../hostaway/client.js";
 import { getCachedCalendar } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, getPropertyNames } from "./properties.js";
+import { toolResult, MS_PER_DAY } from "./tool-result.js";
 
-const MS_PER_DAY = 86_400_000;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function isValidDateString(s: string): boolean {
@@ -24,18 +24,6 @@ function dateRange(checkin: string, nights: number): string[] {
     dates.push(new Date(start.getTime() + i * MS_PER_DAY).toISOString().slice(0, 10));
   }
   return dates;
-}
-
-function toolResult<T>(structuredContent: T) {
-  return {
-    content: [
-      {
-        type: "text" as const,
-        text: JSON.stringify(structuredContent, null, 2)
-      }
-    ],
-    structuredContent
-  };
 }
 
 export function registerGetRatesTool(server: McpServer, client: HostawayDataClient, kv?: KVNamespace) {
