@@ -1,10 +1,18 @@
 /// <reference types="@cloudflare/workers-types" />
 
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+
+import { HostawayClient } from "./hostaway/client.js";
+import { registerDistributionTools } from "./distribution/tools/index.js";
+
 /**
  * Cloudflare Workers entry point for the hostaway-mcp distribution layer.
  *
  * Routes:
- *   POST /mcp    — MCP-over-HTTP (Streamable HTTP transport, Phase 2)
+ *   POST /mcp    — MCP Streamable HTTP transport (stateless)
+ *   GET  /mcp    — MCP SSE stream (Streamable HTTP)
+ *   DELETE /mcp  — MCP session close
  *   GET  /health — health check
  *   *            — 404
  */
@@ -17,8 +25,8 @@ interface Env {
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, Mcp-Session-Id, MCP-Protocol-Version",
 };
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -30,6 +38,36 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 function errorResponse(message: string, status: number): Response {
   return jsonResponse({ error: message }, status);
+}
+
+async function handleMcpRequest(request: Request, env: Env): Promise<Response> {
+  const client = new HostawayClient({ apiToken: env.HOSTAWAY_API_TOKEN });
+  const server = new McpServer({
+    name: "seascape-distribution",
+    version: "1.0.0",
+  });
+
+  registerDistributionTools(server, client);
+
+  // Stateless transport — each request is self-contained (no session tracking)
+  const transport = new WebStandardStreamableHTTPServerTransport({
+    enableJsonResponse: true,
+  });
+
+  await server.connect(transport);
+
+  const response = await transport.handleRequest(request);
+
+  // Append CORS headers to the MCP transport response
+  const headers = new Headers(response.headers);
+  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+    headers.set(key, value);
+  }
+
+  return new Response(response.body, {
+    status: response.status,
+    headers,
+  });
 }
 
 async function handleRequest(request: Request, env: Env): Promise<Response> {
@@ -47,9 +85,8 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     });
   }
 
-  if (url.pathname === "/mcp" && request.method === "POST") {
-    // Phase 2: MCP-over-HTTP Streamable HTTP transport
-    return errorResponse("MCP transport not yet implemented", 501);
+  if (url.pathname === "/mcp") {
+    return handleMcpRequest(request, env);
   }
 
   return errorResponse("Not found", 404);
@@ -66,6 +103,6 @@ export default {
   },
 
   async scheduled(_event: ScheduledEvent, _env: Env, _ctx: ExecutionContext): Promise<void> {
-    // Phase 2: KV pre-warm — fetch listings + calendar, write to PROPERTY_CACHE
+    // Phase 3: KV pre-warm — fetch listings + calendar, write to PROPERTY_CACHE
   },
 };

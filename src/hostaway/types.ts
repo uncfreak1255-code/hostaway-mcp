@@ -70,10 +70,14 @@ export interface RawHostawayListing {
   bookingName?: string | null;
   vrboName?: string | null;
   city?: string | null;
+  state?: string | null;
   country?: string | null;
+  address?: string | null;
   personCapacity?: number | null;
   bedroomsNumber?: number | null;
   guestBathroomsNumber?: number | null;
+  description?: string | null;
+  amenities?: string[] | null;
   bookingEngineUrls?: string[] | null;
   vrboListingUrl?: string | null;
 }
