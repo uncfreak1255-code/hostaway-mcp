@@ -1,8 +1,11 @@
+/// <reference types="@cloudflare/workers-types" />
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";
 
 import type { HostawayDataClient } from "../../hostaway/client.js";
 import type { HostawayCalendarDay } from "../../hostaway/types.js";
+import { getCachedCalendar } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, SEASCAPE_LISTING_IDS } from "./properties.js";
 
@@ -42,7 +45,7 @@ interface UnavailableResult {
 
 type PropertyResult = AvailableResult | UnavailableResult;
 
-export function registerSearchAvailabilityTool(server: McpServer, client: HostawayDataClient) {
+export function registerSearchAvailabilityTool(server: McpServer, client: HostawayDataClient, kv?: KVNamespace) {
   server.registerTool(
     "search_availability",
     {
@@ -85,7 +88,8 @@ export function registerSearchAvailabilityTool(server: McpServer, client: Hostaw
 
           let calendar: HostawayCalendarDay[];
           try {
-            calendar = await client.getCalendar(listingId, checkin, checkout);
+            const cached = kv ? await getCachedCalendar(kv, listingId, checkin, checkout) : null;
+            calendar = cached ?? await client.getCalendar(listingId, checkin, checkout);
           } catch {
             return {
               listing_id: listingId,

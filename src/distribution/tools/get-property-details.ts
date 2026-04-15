@@ -1,7 +1,10 @@
+/// <reference types="@cloudflare/workers-types" />
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";
 
 import type { HostawayDataClient } from "../../hostaway/client.js";
+import { getCachedListing } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, getPropertyNames } from "./properties.js";
 
@@ -17,7 +20,7 @@ function toolResult<T>(structuredContent: T) {
   };
 }
 
-export function registerGetPropertyDetailsTool(server: McpServer, client: HostawayDataClient) {
+export function registerGetPropertyDetailsTool(server: McpServer, client: HostawayDataClient, kv?: KVNamespace) {
   server.registerTool(
     "get_property_details",
     {
@@ -44,7 +47,8 @@ export function registerGetPropertyDetailsTool(server: McpServer, client: Hostaw
       }
 
       try {
-        const listing = await client.getListing(listing_id);
+        const cached = kv ? await getCachedListing(kv, listing_id) : null;
+        const listing = cached ?? await client.getListing(listing_id);
 
         return toolResult({
           listing_id,

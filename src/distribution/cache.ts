@@ -2,25 +2,69 @@
 
 // KV cache read/write helpers for the distribution layer.
 //
-// TODO: implement get/put wrappers around Workers KV with:
-// - typed deserialization via PropertyCacheEntry
-// - TTL-aware writes
-// - batch pre-warm for cron handler
+// Key format:
+//   "property:{listingId}"                         — listing data
+//   "calendar:{listingId}:{startDate}:{endDate}"   — calendar data
+//
+// TTL: 1200 seconds (20 minutes) — slightly longer than the 15-min cron
+// interval so stale reads never happen during normal operation.
 
-import type { PropertyCacheEntry } from "./types.js";
+import type { RawHostawayListing, HostawayCalendarDay } from "../hostaway/types.js";
 
-export async function getCachedProperty(
-  _kv: KVNamespace,
-  _listingId: number
-): Promise<PropertyCacheEntry | null> {
-  // TODO: implement KV read with JSON deserialization
-  return null;
+const DEFAULT_TTL_SECONDS = 1200;
+
+// ── Listing cache ──────────────────────────────────────────────────────
+
+export async function getCachedListing(
+  kv: KVNamespace,
+  listingId: number
+): Promise<RawHostawayListing | null> {
+  try {
+    const raw = await kv.get(`property:${listingId}`);
+    if (raw === null) return null;
+    return JSON.parse(raw) as RawHostawayListing;
+  } catch {
+    return null;
+  }
 }
 
-export async function putCachedProperty(
-  _kv: KVNamespace,
-  _entry: PropertyCacheEntry,
-  _ttlSeconds: number
+export async function putCachedListing(
+  kv: KVNamespace,
+  listingId: number,
+  data: RawHostawayListing
 ): Promise<void> {
-  // TODO: implement KV write with TTL
+  await kv.put(`property:${listingId}`, JSON.stringify(data), {
+    expirationTtl: DEFAULT_TTL_SECONDS,
+  });
+}
+
+// ── Calendar cache ─────────────────────────────────────────────────────
+
+export async function getCachedCalendar(
+  kv: KVNamespace,
+  listingId: number,
+  startDate: string,
+  endDate: string
+): Promise<HostawayCalendarDay[] | null> {
+  try {
+    const raw = await kv.get(`calendar:${listingId}:${startDate}:${endDate}`);
+    if (raw === null) return null;
+    return JSON.parse(raw) as HostawayCalendarDay[];
+  } catch {
+    return null;
+  }
+}
+
+export async function putCachedCalendar(
+  kv: KVNamespace,
+  listingId: number,
+  startDate: string,
+  endDate: string,
+  data: HostawayCalendarDay[]
+): Promise<void> {
+  await kv.put(
+    `calendar:${listingId}:${startDate}:${endDate}`,
+    JSON.stringify(data),
+    { expirationTtl: DEFAULT_TTL_SECONDS }
+  );
 }

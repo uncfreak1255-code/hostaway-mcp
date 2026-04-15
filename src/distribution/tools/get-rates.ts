@@ -1,7 +1,10 @@
+/// <reference types="@cloudflare/workers-types" />
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";
 
 import type { HostawayDataClient } from "../../hostaway/client.js";
+import { getCachedCalendar } from "../cache.js";
 import { buildBookingUrl } from "../utm.js";
 import { SEASCAPE_PROPERTIES, getPropertyNames } from "./properties.js";
 
@@ -17,7 +20,7 @@ function toolResult<T>(structuredContent: T) {
   };
 }
 
-export function registerGetRatesTool(server: McpServer, client: HostawayDataClient) {
+export function registerGetRatesTool(server: McpServer, client: HostawayDataClient, kv?: KVNamespace) {
   server.registerTool(
     "get_rates",
     {
@@ -56,7 +59,8 @@ export function registerGetRatesTool(server: McpServer, client: HostawayDataClie
       }
 
       try {
-        const calendar = await client.getCalendar(listing_id, checkin, checkout);
+        const cached = kv ? await getCachedCalendar(kv, listing_id, checkin, checkout) : null;
+        const calendar = cached ?? await client.getCalendar(listing_id, checkin, checkout);
 
         const rates = calendar.map((day) => ({
           date: day.date,

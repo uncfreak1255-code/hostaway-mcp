@@ -5,6 +5,8 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 
 import { HostawayClient } from "./hostaway/client.js";
 import { registerDistributionTools } from "./distribution/tools/index.js";
+import { putCachedListing, putCachedCalendar } from "./distribution/cache.js";
+import { SEASCAPE_LISTING_IDS } from "./distribution/tools/properties.js";
 
 /**
  * Cloudflare Workers entry point for the hostaway-mcp distribution layer.
@@ -47,7 +49,7 @@ async function handleMcpRequest(request: Request, env: Env): Promise<Response> {
     version: "1.0.0",
   });
 
-  registerDistributionTools(server, client);
+  registerDistributionTools(server, client, env.PROPERTY_CACHE);
 
   // Stateless transport — each request is self-contained (no session tracking)
   const transport = new WebStandardStreamableHTTPServerTransport({
@@ -102,7 +104,47 @@ export default {
     }
   },
 
-  async scheduled(_event: ScheduledEvent, _env: Env, _ctx: ExecutionContext): Promise<void> {
-    // Phase 3: KV pre-warm — fetch listings + calendar, write to PROPERTY_CACHE
+  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    const client = new HostawayClient({ apiToken: env.HOSTAWAY_API_TOKEN });
+    const kv = env.PROPERTY_CACHE;
+
+    const today = new Date();
+    const startDate = today.toISOString().slice(0, 10);
+    const endDate = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+
+    let success = 0;
+    let failed = 0;
+
+    const tasks = SEASCAPE_LISTING_IDS.map(async (listingId) => {
+      try {
+        const [listing, calendar] = await Promise.all([
+          client.getListing(listingId),
+          client.getCalendar(listingId, startDate, endDate),
+        ]);
+
+        await Promise.all([
+          putCachedListing(kv, listingId, listing),
+          putCachedCalendar(kv, listingId, startDate, endDate, calendar),
+        ]);
+
+        success++;
+      } catch (err) {
+        failed++;
+        console.error(
+          `[PREWARM] Failed for listing ${listingId}:`,
+          err instanceof Error ? err.message : err
+        );
+      }
+    });
+
+    ctx.waitUntil(
+      Promise.all(tasks).then(() => {
+        console.log(
+          `[PREWARM] Complete: ${success} succeeded, ${failed} failed`
+        );
+      })
+    );
   },
 };
