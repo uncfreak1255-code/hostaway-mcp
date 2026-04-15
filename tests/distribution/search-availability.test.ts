@@ -252,6 +252,72 @@ describe("search_availability", () => {
     expect(content.error).toMatch(/invalid.*date/i);
   });
 
+  test("excludes property with closedOnArrival on checkin date", async () => {
+    const closedArrival = [
+      makeCalendarDay({ date: "2026-06-01", price: 200, closedOnArrival: 1 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200 }),
+    ];
+    const normal = [
+      makeCalendarDay({ date: "2026-06-01", price: 200 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200 }),
+    ];
+
+    const calendarByListing: Record<number, HostawayCalendarDay[]> = {
+      206016: closedArrival,
+      135880: normal,
+      135881: normal,
+      189511: normal,
+      487798: normal,
+    };
+
+    await connect(makeFakeClient(calendarByListing));
+
+    const result = await client.callTool({
+      name: "search_availability",
+      arguments: { checkin: "2026-06-01", checkout: "2026-06-03", guests: 2 },
+    });
+
+    const content = result.structuredContent as {
+      results: Array<{ listing_id: number; available: boolean }>;
+    };
+    const prop206016 = content.results.find((r) => r.listing_id === 206016);
+    expect(prop206016!.available).toBe(false);
+    expect(content.results.filter((r) => r.available)).toHaveLength(4);
+  });
+
+  test("excludes property with closedOnDeparture on last night", async () => {
+    const closedDeparture = [
+      makeCalendarDay({ date: "2026-06-01", price: 200 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200, closedOnDeparture: 1 }),
+    ];
+    const normal = [
+      makeCalendarDay({ date: "2026-06-01", price: 200 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200 }),
+    ];
+
+    const calendarByListing: Record<number, HostawayCalendarDay[]> = {
+      206016: closedDeparture,
+      135880: normal,
+      135881: normal,
+      189511: normal,
+      487798: normal,
+    };
+
+    await connect(makeFakeClient(calendarByListing));
+
+    const result = await client.callTool({
+      name: "search_availability",
+      arguments: { checkin: "2026-06-01", checkout: "2026-06-03", guests: 2 },
+    });
+
+    const content = result.structuredContent as {
+      results: Array<{ listing_id: number; available: boolean }>;
+    };
+    const prop206016 = content.results.find((r) => r.listing_id === 206016);
+    expect(prop206016!.available).toBe(false);
+    expect(content.results.filter((r) => r.available)).toHaveLength(4);
+  });
+
   test("treats partial calendar response as unavailable", async () => {
     // Request 3 nights but API only returns 2 days
     const partialCalendar = [

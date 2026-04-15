@@ -127,6 +127,19 @@ export function registerSearchAvailabilityTool(server: McpServer, client: Hostaw
           // A property is available if ALL nights in the range are available
           const allAvailable = calendar.every((day) => day.isAvailable === 1);
 
+          // Check arrival/departure restrictions
+          if (allAvailable) {
+            const firstDay = calendar[0]!;
+            const lastDay = calendar[calendar.length - 1]!;
+            if (firstDay.closedOnArrival === 1 || lastDay.closedOnDeparture === 1) {
+              return {
+                listing_id: listingId,
+                name: property.name,
+                available: false
+              };
+            }
+          }
+
           if (!allAvailable) {
             return {
               listing_id: listingId,
