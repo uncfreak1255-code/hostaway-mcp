@@ -21,6 +21,7 @@ import { SEASCAPE_LISTING_IDS } from "./distribution/tools/properties.js";
 
 interface Env {
   HOSTAWAY_API_TOKEN: string;
+  MCP_AUTH_TOKEN: string;
   PROPERTY_CACHE: KVNamespace;
   ENVIRONMENT: string;
 }
@@ -88,6 +89,11 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   }
 
   if (url.pathname === "/mcp") {
+    const authHeader = request.headers.get("Authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    if (!token || token !== env.MCP_AUTH_TOKEN) {
+      return errorResponse("Unauthorized", 401);
+    }
     return handleMcpRequest(request, env);
   }
 
