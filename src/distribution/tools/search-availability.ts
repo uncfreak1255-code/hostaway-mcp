@@ -93,9 +93,12 @@ export function registerSearchAvailabilityTool(server: McpServer, client: Hostaw
         });
       }
 
-      const listingIds = pets
-        ? SEASCAPE_LISTING_IDS.filter((id) => SEASCAPE_PROPERTIES[id]!.petFriendly)
-        : SEASCAPE_LISTING_IDS;
+      let listingIds = SEASCAPE_LISTING_IDS.filter(
+        (id) => SEASCAPE_PROPERTIES[id]!.maxGuests >= guests
+      );
+      if (pets) {
+        listingIds = listingIds.filter((id) => SEASCAPE_PROPERTIES[id]!.petFriendly);
+      }
 
       const results: PropertyResult[] = await Promise.all(
         listingIds.map(async (listingId): Promise<PropertyResult> => {

@@ -252,6 +252,64 @@ describe("search_availability", () => {
     expect(content.error).toMatch(/invalid.*date/i);
   });
 
+  test("filters out properties that cannot accommodate guest count", async () => {
+    // maxGuests: 206016=12, 135880=6, 135881=6, 189511=8, 487798=10
+    const days = [
+      makeCalendarDay({ date: "2026-06-01", price: 200 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200 }),
+    ];
+    const calendarByListing: Record<number, HostawayCalendarDay[]> = {
+      206016: days,
+      135880: days,
+      135881: days,
+      189511: days,
+      487798: days,
+    };
+
+    await connect(makeFakeClient(calendarByListing));
+
+    // 9 guests should exclude bungalows (6) and escape (8)
+    const result = await client.callTool({
+      name: "search_availability",
+      arguments: { checkin: "2026-06-01", checkout: "2026-06-03", guests: 9 },
+    });
+
+    const content = result.structuredContent as {
+      results: Array<{ listing_id: number; available: boolean }>;
+    };
+    // Only 206016 (12) and 487798 (10) should be returned
+    expect(content.results).toHaveLength(2);
+    const ids = content.results.map((r) => r.listing_id).sort();
+    expect(ids).toEqual([206016, 487798]);
+  });
+
+  test("15 guests returns no 6-person properties", async () => {
+    const days = [
+      makeCalendarDay({ date: "2026-06-01", price: 200 }),
+      makeCalendarDay({ date: "2026-06-02", price: 200 }),
+    ];
+    const calendarByListing: Record<number, HostawayCalendarDay[]> = {
+      206016: days,
+      135880: days,
+      135881: days,
+      189511: days,
+      487798: days,
+    };
+
+    await connect(makeFakeClient(calendarByListing));
+
+    const result = await client.callTool({
+      name: "search_availability",
+      arguments: { checkin: "2026-06-01", checkout: "2026-06-03", guests: 15 },
+    });
+
+    const content = result.structuredContent as {
+      results: Array<{ listing_id: number; available: boolean }>;
+    };
+    // No property has maxGuests >= 15
+    expect(content.results).toHaveLength(0);
+  });
+
   test("excludes property with closedOnArrival on checkin date", async () => {
     const closedArrival = [
       makeCalendarDay({ date: "2026-06-01", price: 200, closedOnArrival: 1 }),
