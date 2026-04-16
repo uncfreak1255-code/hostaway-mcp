@@ -7,7 +7,7 @@ ENVIRONMENT = "production"
 
 [[kv_namespaces]]
 binding = "PROPERTY_CACHE"
-id = "placeholder-will-be-set-on-deploy"
+id = "8969afeeddab4cd498708040bf1c2fbb"
 
 [triggers]
 crons = ["*/15 * * * *"]
