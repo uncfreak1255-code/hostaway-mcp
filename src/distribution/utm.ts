@@ -2,7 +2,7 @@ export function buildBookingUrl(
   listingSlug: string,
   opts?: { checkin?: string; checkout?: string; guests?: number }
 ): string {
-  const base = `https://seascapevacations.com/listing/${listingSlug}`;
+  const base = `https://seascape-vacations.com/listing/${listingSlug}`;
   const params = new URLSearchParams({
     utm_source: "mcp",
     utm_medium: "claude",

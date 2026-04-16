@@ -11,7 +11,7 @@ describe("buildBookingUrl", () => {
     });
 
     const parsed = new URL(url);
-    expect(parsed.origin).toBe("https://seascapevacations.com");
+    expect(parsed.origin).toBe("https://seascape-vacations.com");
     expect(parsed.pathname).toBe("/listing/palma-sola-paradise");
     expect(parsed.searchParams.get("utm_source")).toBe("mcp");
     expect(parsed.searchParams.get("utm_medium")).toBe("claude");
