@@ -17,15 +17,8 @@
       },
       "environmentVariables": [
         {
-          "name": "HOSTAWAY_ACCOUNT_ID",
-          "description": "Your Hostaway account ID",
-          "isRequired": true,
-          "isSecret": false,
-          "format": "string"
-        },
-        {
-          "name": "HOSTAWAY_API_KEY",
-          "description": "Your Hostaway API key (client secret)",
+          "name": "HOSTAWAY_API_TOKEN",
+          "description": "Hostaway API token used to authenticate all requests",
           "isRequired": true,
           "isSecret": true,
           "format": "string"

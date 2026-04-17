@@ -140,6 +140,10 @@ class FakeHostawayClient {
 
     return listing;
   }
+
+  async getCalendar() {
+    return [];
+  }
 }
 
 describe("Hostaway MCP server", () => {
@@ -369,6 +373,7 @@ describe("HOSTAWAY_MCP_READONLY flag", () => {
       getReservation: async () => { throw new Error("not found"); },
       listListings: async () => [],
       getListing: async () => { throw new Error("not found"); },
+      getCalendar: async () => [],
       updateConversation: async () => ({ status: "success" as const, result: {} }),
       updateReservation: async () => ({ status: "success" as const, result: {} }),
       sendMessage: async () => ({ status: "success" as const, result: {} })
@@ -412,6 +417,7 @@ describe("HOSTAWAY_MCP_READONLY flag", () => {
       getReservation: async () => { throw new Error("not found"); },
       listListings: async () => [],
       getListing: async () => { throw new Error("not found"); },
+      getCalendar: async () => [],
       updateConversation: async () => ({ status: "success" as const, result: {} }),
       updateReservation: async () => ({ status: "success" as const, result: {} }),
       sendMessage: async () => ({ status: "success" as const, result: {} })
@@ -452,6 +458,7 @@ describe("HOSTAWAY_MCP_READONLY flag", () => {
       getReservation: async () => { throw new Error("not found"); },
       listListings: async () => [],
       getListing: async () => { throw new Error("not found"); },
+      getCalendar: async () => [],
       updateConversation: async () => ({ status: "success" as const, result: {} })
     };
 

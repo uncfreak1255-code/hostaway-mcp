@@ -56,7 +56,7 @@ spawn the published npm package over stdio.
 The snippets below are pinned to the current published version:
 
 ```text
-hostaway-mcp@0.1.2
+hostaway-mcp@0.1.3
 ```
 
 Update that version intentionally when you upgrade.
@@ -73,7 +73,7 @@ If you already have top-level keys like `preferences`, keep them and add
   "mcpServers": {
     "hostaway": {
       "command": "npx",
-      "args": ["-y", "hostaway-mcp@0.1.2"],
+      "args": ["-y", "hostaway-mcp@0.1.3"],
       "env": {
         "HOSTAWAY_API_TOKEN": "your-token-here"
       }
@@ -91,7 +91,7 @@ Edit `~/.codex/config.toml` and add:
 ```toml
 [mcp_servers.hostaway]
 command = "npx"
-args = ["-y", "hostaway-mcp@0.1.2"]
+args = ["-y", "hostaway-mcp@0.1.3"]
 
 [mcp_servers.hostaway.env]
 HOSTAWAY_API_TOKEN = "your-token-here"

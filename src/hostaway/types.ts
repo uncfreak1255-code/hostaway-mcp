@@ -70,10 +70,14 @@ export interface RawHostawayListing {
   bookingName?: string | null;
   vrboName?: string | null;
   city?: string | null;
+  state?: string | null;
   country?: string | null;
+  address?: string | null;
   personCapacity?: number | null;
   bedroomsNumber?: number | null;
   guestBathroomsNumber?: number | null;
+  description?: string | null;
+  amenities?: string[] | null;
   bookingEngineUrls?: string[] | null;
   vrboListingUrl?: string | null;
 }
@@ -103,4 +107,19 @@ export interface ConversationMessageSummary {
   text: string;
   timestamp: string | null;
   hasAttachments: boolean;
+}
+
+export interface HostawayCalendarDay {
+  id: number;
+  date: string;
+  isAvailable: 0 | 1;
+  status: string;
+  price: number;
+  minimumStay: number;
+  maximumStay: number;
+  closedOnArrival: 0 | 1;
+  closedOnDeparture: 0 | 1;
+  note: string | null;
+  countAvailableUnits: number;
+  availableUnitsToSell: number;
 }

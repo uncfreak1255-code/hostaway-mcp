@@ -1,4 +1,5 @@
 import type {
+  HostawayCalendarDay,
   RawHostawayConversation,
   RawHostawayListing,
   RawHostawayMessage,
@@ -61,6 +62,7 @@ export interface HostawayDataClient {
   getReservation(reservationId: string | number): Promise<RawHostawayReservationLike>;
   listListings(params?: ListListingsParams): Promise<RawHostawayListing[]>;
   getListing(listingId: string | number): Promise<RawHostawayListing>;
+  getCalendar(listingId: number, startDate: string, endDate: string): Promise<HostawayCalendarDay[]>;
 }
 
 export interface HostawayWriteClient extends HostawayDataClient {
@@ -104,6 +106,10 @@ export class HostawayClient implements HostawayWriteClient {
 
   async getListing(listingId: string | number): Promise<RawHostawayListing> {
     return this.request(`/v1/listings/${listingId}`);
+  }
+
+  async getCalendar(listingId: number, startDate: string, endDate: string): Promise<HostawayCalendarDay[]> {
+    return this.request(`/v1/listings/${listingId}/calendar`, { startDate, endDate });
   }
 
   async updateConversation(conversationId: string | number, body: Record<string, unknown>): Promise<HostawayWriteResult> {
