@@ -6,6 +6,7 @@ This repo owns the implementation of the open-source Hostaway MCP server.
 
 - Hold scope on the v1 surface in `README.md`.
 - V1 is read-only. No write paths, no "safe" exceptions.
+- No booking/distribution Worker in this repo.
 - Prefer explicit, hospitality-shaped tools over broad raw API coverage.
 - Reuse proven Hostaway field and workflow mappings from:
   - `/Users/sawbeck/Projects/seascape-ops/scripts/hostaway-poller.js`
