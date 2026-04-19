@@ -2,6 +2,9 @@
 
 Read-only, hospitality-shaped MCP server for Hostaway.
 
+This repo owns the operator product only: local/npm `stdio`, six read-only
+tools, no Cloudflare Worker, and no Seascape booking surface.
+
 ## V1 Goal
 
 Make Codex and Claude useful in real Hostaway workflows without hand-wiring raw API
@@ -56,7 +59,7 @@ spawn the published npm package over stdio.
 The snippets below are pinned to the current published version:
 
 ```text
-hostaway-mcp@0.1.3
+hostaway-mcp@0.2.0
 ```
 
 Update that version intentionally when you upgrade.
@@ -73,7 +76,7 @@ If you already have top-level keys like `preferences`, keep them and add
   "mcpServers": {
     "hostaway": {
       "command": "npx",
-      "args": ["-y", "hostaway-mcp@0.1.3"],
+      "args": ["-y", "hostaway-mcp@0.2.0"],
       "env": {
         "HOSTAWAY_API_TOKEN": "your-token-here"
       }
@@ -91,7 +94,7 @@ Edit `~/.codex/config.toml` and add:
 ```toml
 [mcp_servers.hostaway]
 command = "npx"
-args = ["-y", "hostaway-mcp@0.1.3"]
+args = ["-y", "hostaway-mcp@0.2.0"]
 
 [mcp_servers.hostaway.env]
 HOSTAWAY_API_TOKEN = "your-token-here"
@@ -124,12 +127,13 @@ CLI directly:
 |---|---|---|---|
 | `HOSTAWAY_API_TOKEN` | Yes | — | Hostaway API token used to authenticate all requests. |
 | `HOSTAWAY_BASE_URL` | No | Hostaway production URL | Override the API base URL (useful for testing). |
-| `HOSTAWAY_MCP_READONLY` | No | `false` | Set to `true` to disable all write tools. Only read-only tools will be available. |
 
 ## V1 Non-Goals
 
 - sending guest messages
 - mutating reservations or listings
+- Cloudflare Worker transport
+- Seascape booking/distribution flows
 - webhook ingestion
 - background sync pipelines
 - dashboards or owner reporting

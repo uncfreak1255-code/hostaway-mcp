@@ -3,6 +3,9 @@
 Generated from approved office-hours design on 2026-03-26.
 Status: APPROVED
 
+Note: the Seascape booking/distribution Worker no longer belongs in this repo.
+This design is only for the operator MCP product.
+
 ## Problem Statement
 
 Build a read-only, open-source Hostaway MCP server that makes Codex and Claude useful
