@@ -20,8 +20,13 @@ This repo owns the implementation of the open-source Hostaway MCP server.
 ## Before Coding
 
 1. Read [docs/designs/v1-readonly-hostaway-mcp.md](/Users/sawbeck/Projects/hostaway-mcp/docs/designs/v1-readonly-hostaway-mcp.md)
-2. Lock the architecture with `/plan-eng-review`
-3. Keep the minimal tool surface unless the plan is explicitly updated
+2. Use the engineering-core routing ladder:
+   - contained bug or confusing local failure: `diagnose`
+   - behavior change with tests: `tdd`
+   - refactor or architecture candidate review: `improve-codebase-architecture`
+   - finish, cleanup, commit, or "am I good?": `senior-dev-closeout`
+3. Escalate to adversarial architecture review only when Sawyer explicitly asks, when the read-only v1 boundary could change, or when a proposed change would add write paths, live credentials, or broad raw Hostaway API coverage.
+4. Keep the minimal tool surface unless the plan is explicitly updated
 
 ## Testing Expectations
 
