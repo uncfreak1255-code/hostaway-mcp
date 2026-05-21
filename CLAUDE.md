@@ -28,6 +28,17 @@ This repo owns the implementation of the open-source Hostaway MCP server.
 3. Escalate to adversarial architecture review only when Sawyer explicitly asks, when the read-only v1 boundary could change, or when a proposed change would add write paths, live credentials, or broad raw Hostaway API coverage.
 4. Keep the minimal tool surface unless the plan is explicitly updated
 
+## Skill Routing
+
+- For Cloudflare Worker distribution work, remote MCP transport changes,
+  Wrangler config, deploy/dry-run checks, or Worker-specific review, load the
+  global Codex skills:
+  - `cloudflare`
+  - `wrangler`
+  - `workers-best-practices`
+- Keep those helpers subordinate to this repo's v1 truth: generic, read-only,
+  hospitality-shaped, and not Seascape runtime-specific.
+
 ## Testing Expectations
 
 - Use sanitized fixtures based on real Hostaway payload shapes
