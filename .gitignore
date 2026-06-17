@@ -3,3 +3,7 @@ dist/
 coverage/
 *.log
 *.tgz
+
+# Local MCP config and registry secrets (never commit)
+.mcp.local.json
+.mcpregistry_*
