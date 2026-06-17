@@ -1,35 +1,21 @@
-# Hostaway MCP — Repo Instructions
+# Hostaway MCP — Claude Notes
 
-This repo owns the implementation of the open-source Hostaway MCP server.
+**Read [`AGENTS.md`](./AGENTS.md) first — it is canonical.** It holds the scope
+and write-safety contract, verified commands, the file map, core rules, and
+skill routing. This file is only the Claude-specific delta.
 
-## Core Rules
+## Safety-critical reminder
 
-- Hold scope on the v1 surface in `README.md`.
-- V1 is read-only. No write paths, no "safe" exceptions.
-- No booking/distribution Worker in this repo.
-- Prefer explicit, hospitality-shaped tools over broad raw API coverage.
-- Reuse proven Hostaway field and workflow mappings from:
-  - `/Users/sawbeck/Projects/seascape-ops/scripts/hostaway-poller.js`
-  - `/Users/sawbeck/Projects/seascape-ops/scripts/import-hostaway-conversations.js`
-- Do not copy Seascape runtime concerns into this repo:
-  - Discord posting
-  - launchd jobs
-  - watchdogs
-  - mailbox plumbing
-  - local runtime state
+`main` is **read-only**: six read tools in `src/server.ts`, no write paths, no
+PMS mutation. Adding any write surface is a [SENSITIVE CHANGE] — see the
+write-safety contract in `AGENTS.md`. Default to read-only; never print or
+commit `HOSTAWAY_API_TOKEN`, and never read/echo `.mcp.local.json` or
+`.mcpregistry_*`.
 
-## Before Coding
+## Claude-specific notes
 
-1. Read [docs/designs/v1-readonly-hostaway-mcp.md](/Users/sawbeck/Projects/hostaway-mcp/docs/designs/v1-readonly-hostaway-mcp.md)
-2. Lock the architecture with `/plan-eng-review`
-3. Keep the minimal tool surface unless the plan is explicitly updated
-
-## Testing Expectations
-
-- Use sanitized fixtures based on real Hostaway payload shapes
-- No live credentials required for core normalization tests
-- Tests are part of the first implementation, not follow-up cleanup
-
-## Distribution Expectation
-
-This is a developer tool. Build and publish are part of the product, not optional afterthoughts.
+- Commands, file map, and CI/githook gates: see the "Commands" and "File Map"
+  sections of `AGENTS.md` rather than duplicating them here.
+- Skill lanes: `superpowers:systematic-debugging` for bugs,
+  `superpowers:test-driven-development` for features/fixes,
+  `superpowers:requesting-code-review` before merge, `agent-finish` to land.
