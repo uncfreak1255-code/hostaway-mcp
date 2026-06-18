@@ -1,3 +1,9 @@
 #!/bin/sh
 set -eu
 node "/Users/sawbeck/.codex/guardrail-kit/bin/guardrail-pre-commit.js"
+
+# keel proof-gate (fail-open): runs the repo's proof if .keel/verify exists.
+# Absent keel-core or absent .keel/verify => allowed (fail-open). See .keel/.
+KEEL_CORE="/Users/sawbeck/.keel/bin/keel-core.sh"
+[ -f "$KEEL_CORE" ] && { . "$KEEL_CORE"; keel_run_proof || exit $?; }
+exit 0
