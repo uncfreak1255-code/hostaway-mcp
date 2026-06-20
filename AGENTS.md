@@ -99,10 +99,14 @@ Worker/distribution surface and no shared-client split on `main`.
 
 Use the live lanes:
 
-- Bugs / failures / unexpected behavior → `superpowers:systematic-debugging`.
-- Features and bug fixes → `superpowers:test-driven-development`.
-- Before merging non-trivial diffs → `superpowers:requesting-code-review`.
-- Landing the work → `agent-finish`.
+- Bugs / failures / unexpected behavior -> use the debugging lane and prove the
+  root cause before fixing.
+- Features and bug fixes -> implement with the repo proof gate and add focused
+  regression coverage when behavior changes.
+- Before merging non-trivial diffs -> run Codex `autoreview` with `gpt-5.5`;
+  use GStack `review` for PR or landing readiness.
+- Landing the work -> use `agent-finish` or GStack `ship`; merge only with
+  explicit permission.
 
 ## Distribution Expectation
 

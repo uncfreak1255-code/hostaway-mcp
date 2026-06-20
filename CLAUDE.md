@@ -16,6 +16,6 @@ commit `HOSTAWAY_API_TOKEN`, and never read/echo `.mcp.local.json` or
 
 - Commands, file map, and CI/githook gates: see the "Commands" and "File Map"
   sections of `AGENTS.md` rather than duplicating them here.
-- Skill lanes: `superpowers:systematic-debugging` for bugs,
-  `superpowers:test-driven-development` for features/fixes,
-  `superpowers:requesting-code-review` before merge, `agent-finish` to land.
+- Skill lanes: use the debugging lane for bugs, the repo proof gate plus focused
+  regression coverage for features/fixes, Codex `autoreview` with `gpt-5.5` for
+  non-trivial diffs, and `agent-finish` or GStack `ship` to land.
