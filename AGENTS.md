@@ -54,7 +54,7 @@ Gates run in two places:
 - **Local githooks** (`.githooks/pre-commit`, `.githooks/pre-push`) invoke the
   shared guardrail kit. `.guardrails.json` enforces feature-branch workflow and
   protects `main`/`master`.
-- **GitHub Actions CI** (`.github/workflows/ci.yml`, `pr-check.yml`) runs
+- **GitHub Actions CI** (`.github/workflows/ci.yml`) runs
   `npm ci`, `npm test`, `npm run check`, and `npm run build` on PRs to and
   pushes to `main`.
 
