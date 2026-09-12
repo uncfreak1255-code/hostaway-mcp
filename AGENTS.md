@@ -103,8 +103,15 @@ Use the live lanes:
   root cause before fixing.
 - Features and bug fixes -> implement with the repo proof gate and add focused
   regression coverage when behavior changes.
-- Before merging non-trivial diffs -> run Codex `autoreview` with `gpt-5.5`;
-  use GStack `review` for PR or landing readiness.
+- Changes to tool registration, credential handling, the read-only/write-safety
+  boundary, or the published package surface -> implement, run focused tests,
+  run one Codex `autoreview` pass with `gpt-5.5`, verify every finding against
+  the source, fix confirmed defects, rerun the affected tests, then continue
+  landing review and closeout. This repo-local review is required because a
+  defect in these paths can expose PMS mutations or credentials, or publish a
+  broken operator package. For other docs and internal refactors, `autoreview`
+  stays explicit. Use GStack `review` only when it is the selected PR or landing
+  review route.
 - Landing the work -> use `agent-finish` or GStack `ship`; merge only with
   explicit permission.
 
