@@ -18,4 +18,4 @@ commit `HOSTAWAY_API_TOKEN`, and never read/echo `.mcp.local.json` or
   sections of `AGENTS.md` rather than duplicating them here.
 - Skill lanes: use the debugging lane for bugs, the repo proof gate plus focused
   regression coverage for features/fixes, the scoped Autoreview trigger in
-  `AGENTS.md`, and `agent-finish` or GStack `ship` to land.
+  `AGENTS.md`, and `agent-finish` to land.
