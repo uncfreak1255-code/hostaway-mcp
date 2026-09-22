@@ -110,10 +110,8 @@ Use the live lanes:
   landing review and closeout. This repo-local review is required because a
   defect in these paths can expose PMS mutations or credentials, or publish a
   broken operator package. For other docs and internal refactors, `autoreview`
-  stays explicit. Use GStack `review` only when it is the selected PR or landing
-  review route.
-- Landing the work -> use `agent-finish` or GStack `ship`; merge only with
-  explicit permission.
+  stays explicit.
+- Landing the work -> use `agent-finish`; merge only with explicit permission.
 
 ## Distribution Expectation
 
